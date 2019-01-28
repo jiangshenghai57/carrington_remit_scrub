@@ -16,9 +16,10 @@ import xlrd
 
 from datetime import datetime
 
+
 class Scrub:
     """
-    I am an object
+    Carrington Mortage Servicing object
     """
     def __init__(self, dist_date=None, dictionary=None):
         self.const            = Constants()
@@ -54,6 +55,7 @@ class Scrub:
         self.aggdata_path = "D:\\deals\\Carrington\\aggdata\\"
         os.makedirs(self.aggdata_path, exist_ok=True)
 
+
     def find_remit_files(self):
         """
         From January 2018 forward. There should be a yymm monthly that contains
@@ -70,6 +72,7 @@ class Scrub:
         for file in os.listdir(self.remit_files_path):
             if os.path.isfile("{}\\{}".format(self.remit_files_path, file)):
                 self.files.append("{}\\{}".format(self.remit_files_path, file))
+                
 
     def match_file(self):
         """
@@ -113,14 +116,14 @@ class Scrub:
 
         # Reading the excel file find the work sheet names
         # Assign working objects remit report and modification reports tabs
-        self.deal_path = self.dict[self.deal_key]['deal_dir']
-        ws = pd.ExcelFile(self.remit_file)
-        ws_sht_nm = ws.sheet_names
+        self.deal_path  = self.dict[self.deal_key]['deal_dir']
+        ws              = pd.ExcelFile(self.remit_file)
+        ws_sht_nm       = ws.sheet_names
         self.remit_rprt = [nm for nm in ws_sht_nm if 'remittance report' in nm.lower()]
         self.mod_nm     = [nm for nm in ws_sht_nm if 'modification' in nm.lower()]
-        self.ws  = pd.read_excel(self.remit_file, sheet_name = self.remit_rprt[self.const.ZERO])
-        self.mod = pd.read_excel(self.remit_file, sheet_name = self.mod_nm[self.const.ZERO])
-        self.ws_col = list(self.ws.columns)
+        self.ws         = pd.read_excel(self.remit_file, sheet_name = self.remit_rprt[self.const.ZERO])
+        self.mod        = pd.read_excel(self.remit_file, sheet_name = self.mod_nm[self.const.ZERO])
+        self.ws_col     = list(self.ws.columns)
 
         #if KeyError comes up, then "Loan count" string is missing
         try:
@@ -154,6 +157,7 @@ class Scrub:
 
         self.checking_cms_remit()
 
+
     def scrub_carr_mod(self):
         try:
             # Checking the excel files has the correct worksheet names
@@ -176,7 +180,6 @@ class Scrub:
             print("")
 
 
-
     def create_mod(self):
         """
         main function to create the modification csv's
@@ -188,13 +191,13 @@ class Scrub:
             self.ws_temp = self.ws.set_index(self.ws_col[self.const.ZERO])
             self.ws_temp_ind = list(self.ws_temp.index)
 
-            balloon = []
-            forbear = []
-            rmg_term = []
-            deal_path = []
+            balloon       = []
+            forbear       = []
+            rmg_term      = []
+            deal_path     = []
             spec_svcg_fee = []
-            last_dist = UserInput().last_mon(self.dist_date)
-            next_dist = Miscellaneous().next_mon(self.dist_date)
+            last_dist     = UserInput().last_mon(self.dist_date)
+            next_dist     = Miscellaneous().next_mon(self.dist_date)
 
             # Add a true bal column. True bal will be used in mod csv/dbf
             # Modify mod tab to grab the ending balance from remittance report
@@ -215,7 +218,7 @@ class Scrub:
 
             # getting the months difference between two date within the mods tab
             def diff_month(d1, d2):
-                return(d1.year - d2.year) * self.const.TWELVE + d1.month - d2.month
+                return (d1.year - d2.year) * self.const.TWELVE + d1.month - d2.month
 
             for i in np.arange(self.const.ZERO, len(self.mod)):
                 if pd.isnull(self.mod.loc[i, 'Post Mod Ball Pmt Date']) == False:
@@ -272,13 +275,13 @@ class Scrub:
             # if len(df.index) == 1 is true, SettingWithCopyWarning will pop up
             # it makes the output look cleaner
             if len(df.index) > self.const.ONE:
-                df.loc[df.index, 'deal_path'] = pd.Series(self.dict[self.deal_key]['deal_dir'], \
+                df.loc[df.index, 'deal_path']     = pd.Series(self.dict[self.deal_key]['deal_dir'], \
                                                           index=df.index)
-                df.loc[df.index, 'Mod Date'] = pd.Series(mod_date, index=df.index)
+                df.loc[df.index, 'Mod Date']      = pd.Series(mod_date, index=df.index)
                 df.loc[df.index, 'spec_svcg_fee'] = pd.Series(spec_svcg_fee, index=df.index)
             elif len(df.index) == self.const.ONE:
-                df.loc[df.index, 'deal_path'] = self.dict[self.deal_key]['deal_dir']
-                df.loc[df.index, 'Mod Date'] = mod_date
+                df.loc[df.index, 'deal_path']     = self.dict[self.deal_key]['deal_dir']
+                df.loc[df.index, 'Mod Date']      = mod_date
                 df.loc[df.index, 'spec_svcg_fee'] = spec_svcg_fee
 
             df2 = pd.DataFrame(full_name, index=df.index)
@@ -325,8 +328,8 @@ class Scrub:
                 return
 
         except KeyError:
-            print("Cannot find Loan Count string in remittance worksheet.")
-            print("Going to the next deal.")
+            print("Cannot find Loan Count string in remittance worksheet!!!")
+            print("Skipping this deal for now.")
             print("")
             return
 
@@ -892,7 +895,8 @@ class Scrub:
                 "servicing fee a" in str(fee_ws.cell(i,self.const.SEVEN)).lower():
                     actual_svcg_fee = fee_ws.cell_value(i, self.const.ELEVEN)
                     break
-                else: actual_svcg_fee = None
+                else:
+                    actual_svcg_fee = None
 
             for i in np.arange(self.const.TWOHUNDREDTWENTY, self.const.TWOHUNDREDSEVENTY):
                 if ("class b" in str(fee_ws.cell_value(i, self.const.TWO)).lower() and \
@@ -966,19 +970,19 @@ class Scrub:
                             tot_dist = rt_ws.cell_value(class_a_row, col + self.const.ONE)
                             break
                         else:
-                            class_a_int_dist = None
+                            class_a_int_dist  = None
                             class_a_prin_dist = None
-                            end_cert_bal_a = None
-                            tot_dist = None
+                            end_cert_bal_a    = None
+                            tot_dist          = None
 
                     if end_cert_bal_a >= self.const.ZERO and tot_dist >= self.const.ZERO:
                         break
 
-                end_cert_bal_po = None
-                tot_dist_po = None
-                class_po_int_dist = None
+                end_cert_bal_po    = None
+                tot_dist_po        = None
+                class_po_int_dist  = None
                 class_po_prin_dist = None
-                deal_type = 'A'
+                deal_type          = 'A'
 
             else:
                 for row in np.arange(class_a_row - self.const.THREE, self.const.EIGHTEEN):
@@ -1084,41 +1088,49 @@ class Scrub:
 
             if abs(check_1) > self.const.POINTZEROFIVE:
                 print("Check 1 is off by {:2f}".format(abs(check_1)))
+                print("Watch out!!!")
 
             if class_po_tot_remit == None and "remit_check_1" in self.dict[self.deal_key]['check_type']:
                 remit_check_1 = carr_remit - servicing - paf_trustee - class_a_tot_remit
                 if abs(remit_check_1) > self.const.POINTZEROFIVE:
                     print("Remit check 1 is off by {:2f}".format(abs(remit_check_1)))
-
+                    print("Watch out!!!")    
+                    
             elif "remit_check_1" in self.dict[self.deal_key]['check_type']:
                 remit_check_1 = carr_remit - servicing - paf_trustee - class_a_tot_remit - class_po_tot_remit
                 if abs(remit_check_1) > self.const.POINTZEROFIVE:
                     print("Remit check 1 is off by {:2f}".format(abs(remit_check_1)))
+                    print("Watch out!!!")
 
             elif "remit_check_2" in self.dict[self.deal_key]['check_type']:
                 remit_check_2 = gross_cash - fmv - carr_remit
                 if abs(remit_check_2) > self.const.POINTZEROFIVE:
                     print("Remit check 2 is off by {:2f}".format(abs(remit_check_2)))
+                    print("Watch out!!!")
 
             elif class_po_tot_remit == None and "remit_check_3" in self.dict[self.deal_key]['check_type']:
                 remit_check_3 = gross_cash - fmv - paf_trustee - servicing - class_a_tot_remit
                 if abs(remit_check_3) > self.const.POINTZEROFIVE:
                     print("Remit check 3 is off by {:2f}".format(abs(remit_check_3)))
+                    print("Watch out!!!")
 
             elif "remit_check_3" in self.dict[self.deal_key]['check_type']:
                 remit_check_3 = gross_cash - fmv - paf_trustee - servicing - class_a_tot_remit - class_po_tot_remit
                 if abs(remit_check_3) > self.const.POINTZEROFIVE:
                     print("Remit check 3 is off by {:2f}".format(abs(remit_check_3)))
+                    print("Watch out!!!")
 
             elif class_po_tot_remit == None and "remit_check_4" in self.dict[self.deal_key]['check_type']:
                 remit_check_4 = gross_cash - fmv - carr_remit
                 if abs(remit_check_4) > self.const.POINTZEROFIVE:
                     print("Remit check 4 is off by {:2f}".format(abs(remit_check_4)))
+                    print("Watch out!!!")
 
             elif "remit_check_4" in self.dict[self.deal_key]['check_type']:
                 remit_check_4 = gross_cash - fmv - carr_remit
                 if abs(remit_check_4) > self.const.POINTZEROFIVE:
                     print("Remit check 4 is off by {:2f}".format(abs(remit_check_4)))
+                    print("Watch out!!!")
 
             else:
                 print("You're shit out of luck!!!")
@@ -1126,6 +1138,9 @@ class Scrub:
         except:
             print("Error handling happened in cms_cash_check function!!!")
 
+    @staticmethod
+    def testing_staticmethod(var):
+        return var ** 2 * 3.14159
 
 class UserInput:
 
@@ -1139,7 +1154,7 @@ class UserInput:
             while True:
 
                 distribution_yymm = input("Please enter the distrituion month and year, " + \
-                                               "(example 1701 for January 2017): ")
+                                          "(example 1701 for January 2017): ")
                 try:
                     if (int(distribution_yymm[self.const.TWO:self.const.FOUR]) >= self.const.ONE) and \
                     (int(distribution_yymm[self.const.TWO:self.const.FOUR]) <= self.const.TWELVE) and \
@@ -1147,6 +1162,7 @@ class UserInput:
 
                         month = int(distribution_yymm[self.const.TWO:self.const.FOUR])
                         year = int(distribution_yymm[self.const.ZERO:self.const.TWO])
+                        
                         if month < self.const.TEN:
                             month = "0{}".format(str(month))
                         else:
@@ -1172,7 +1188,9 @@ class UserInput:
 
 
     def last_mon(self, dist_date=None):
-
+        """
+        This is the last yymm from the current dist_date (distribution date)
+        """
         if int(dist_date[-self.const.TWO:]) == self.const.ONE:
             last_mon = self.const.TWELVE
             cur_yr = int(dist_date[self.const.ZERO:self.const.TWO])
@@ -1193,12 +1211,10 @@ class UserInput:
         return last_mon
 
 
-
-
 class Miscellaneous:
 
     def __init__(self):
-        self = self
+        self.const = Constants()
 
     def is_empty(self, any_structure):
         # empty structure is False by default
@@ -1209,23 +1225,23 @@ class Miscellaneous:
 
     def next_mon(self, dist_date):
         '''
-        Take yymm as an input and return yymm as a string
+        Take yymm as an input and return next yymm as a string
         '''
-        if int(dist_date[-2:]) == 12:
+        if int(dist_date[-self.const.TWO:]) == self.const.TWELVE:
             next_mon = '01'
-            cur_yr = int(dist_date[0:2])
-            next_yr = cur_yr + 1
+            cur_yr   = int(dist_date[self.const.ZERO:self.const.TWO])
+            next_yr  = cur_yr + self.const.ONE
             next_mon = str(next_yr) + next_mon
         else:
-            if (int(dist_date[-2:]) + 1) < 10:
-                cur_mon = int(dist_date[-2:])
-                next_mon = cur_mon + 1
-                cur_yr = int(dist_date[0:2])
+            if (int(dist_date[-self.const.TWO:]) + self.const.ONE) < self.const.TEN:
+                cur_mon  = int(dist_date[-self.const.TWO:])
+                next_mon = cur_mon + self.const.ONE
+                cur_yr   = int(dist_date[self.const.ZERO:self.const.TWO])
                 next_mon = str(cur_yr) + "0" + str(next_mon)
             else:
-                cur_mon = int(dist_date[-2:])
-                next_mon = cur_mon + 1
-                cur_yr = int(dist_date[0:2])
+                cur_mon  = int(dist_date[-self.const.TWO:])
+                next_mon = cur_mon + self.const.ONE
+                cur_yr   = int(dist_date[self.const.ZERO:self.const.TWO])
                 next_mon = str(cur_yr) + str(next_mon)
 
         return next_mon
@@ -1276,9 +1292,9 @@ class Constants:
         self.TWOHUNDREDFIFTYFIVE = 255
         self.TWOHUNDREDSEVENTY = 270
         self.TWOHUNDREDSEVENTYFIVE = 275
-        self.TWELVEHUNDRED = 1200
-        self.TWOTHOUSAND = 2000
-        self.POINTZEROFIVE = 0.05
-        self.POINTZEROZEROONE = 0.001
-        self.POINTZEROZEROSIX = 0.006
+        self.TWELVEHUNDRED         = 1200
+        self.TWOTHOUSAND           = 2000
+        self.POINTZEROFIVE         = 0.05
+        self.POINTZEROZEROONE   = 0.001
+        self.POINTZEROZEROSIX   = 0.006
         self.ONEHUNDREDTHOUSAND = 100000

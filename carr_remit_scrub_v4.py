@@ -82,10 +82,10 @@ if __name__ == '__main__':
     scrub.find_remit_files()
     for deal in MyDeals().dict.keys():
         scrub.init_files(deal_key=deal)
-        threading.Thread(target=scrub.scrub_carr()).start()
+#        threading.Thread(target=scrub.scrub_carr()).start()
         threading.Thread(target=scrub.scrub_carr_mod()).start()
-        threading.Thread(target=scrub.create_dat()).start()
-        threading.Thread(target=scrub.create_adj()).start()
+#        threading.Thread(target=scrub.create_dat()).start()
+#        threading.Thread(target=scrub.create_adj()).start()
         print("")
            
     print("Press Enter to exit -->>>")
